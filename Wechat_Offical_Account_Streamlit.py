@@ -6,7 +6,7 @@ import json
 
 st.set_page_config(layout="wide", page_title="微信公众号:Streamlit")
 
-choose = st.sidebar.ratio("请选择一个要打开的应用",("中英文互翻","MP4视频转GIF"))
+choose = st.sidebar.radio("请选择一个要打开的应用",("中英文互翻","MP4视频转GIF"))
 if choose == "中英文互翻":
 	st.header("中英单词互翻神器")
 	st.info("要翻译中文单词，请输入中文，会返回对应英文；\n\n\n\n要翻译英文单词，请输入英文，会返回对应中文;")
