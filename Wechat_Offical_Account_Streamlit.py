@@ -3,12 +3,6 @@ from moviepy.editor import *
 import requests
 import struct
 import json
-from numpy import load
-from numpy import expand_dims
-from matplotlib import pyplot
-from PIL import Image, ImageDraw, ImageFont, ImageFile
-import numpy as np
-import os
 import random as _random
 import string
 
@@ -28,7 +22,7 @@ with c5:
 	st.empty()
 
 
-choose = st.sidebar.radio("请选择一个要打开的应用",("中英文互翻","MP4视频转GIF","ASCII字符画","密码生成器"))
+choose = st.sidebar.radio("请选择一个要打开的应用",("中英文互翻","MP4视频转GIF","密码生成器"))
 if choose == "中英文互翻":
 	st.header("中英单词互翻神器")
 	st.info("要翻译中文单词，请输入中文，会返回对应英文；\n\n\n\n要翻译英文单词，请输入英文，会返回对应中文;")
@@ -127,103 +121,6 @@ elif choose == "MP4视频转GIF":
 
 		except RuntimeError:
 			st.warning("GIF文件大小超过限制，分辨率或帧数过高，请调整！")
-
-elif choose == "ASCII字符画":
-	st.header("上传一张图片生成ASCII字符画")
-
-	ImageFile.LOAD_TRUNCATED_IMAGES = True
-	Image.MAX_IMAGE_PIXELS = None
-
-	color_fornt = st.sidebar.color_picker('选择前景色', '#00b8e6')
-
-	color_background = st.sidebar.color_picker('选择背景色', '#ffffff')
-
-	sc_control = st.sidebar.slider('选择密度参数1', 0.1, 0.9, 0.5, 0.1)
-	gcf_control = st.sidebar.slider('选择密度参数2', 0.5, 4.5, 2.1, 0.1)
-
-	uploaded_file = st.file_uploader("选择一张图片", type=["png","jpg","bmp","jpeg"])
-
-	@st.cache()
-	def asciiart(in_f, SC, GCF,  out_f, bgcolor=color_background):
-
-	    chars = np.asarray(list(' .,:irs?@9B&#*$%!~'))
-
-	    font = ImageFont.load_default()
-	    letter_width = font.getsize("x")[0]
-	    letter_height = font.getsize("x")[1]
-	    WCF = letter_height/letter_width
-	    img = Image.open(in_f)
-	    widthByLetter=round(img.size[0]*SC*WCF)
-	    heightByLetter = round(img.size[1]*SC)
-	    S = (widthByLetter, heightByLetter)
-	    img = img.resize(S)
-	    img = np.sum(np.asarray(img), axis=2)
-	    img -= img.min()
-	    img = (1.0 - img/img.max())**GCF*(chars.size-1)
-	    lines = ("\n".join( ("".join(r) for r in chars[img.astype(int)]) )).split("\n")
-	    nbins = len(lines)
-	    newImg_width= letter_width *widthByLetter
-	    newImg_height = letter_height * heightByLetter
-	    newImg = Image.new("RGBA", (newImg_width, newImg_height), bgcolor)
-	    draw = ImageDraw.Draw(newImg)
-	    leftpadding=0
-	    y = 0
-	    lineIdx=0
-	    
-	    for line in lines:
-	        color = color_fornt
-	        lineIdx +=1
-	        draw.text((leftpadding, y), line, color, font=font)
-	        y += letter_height
-
-	    newImg.save(out_f)
-
-	@st.cache()
-	def load_image(filename, size=(512,512)):
-		pixels = load_img(filename, target_size=size)
-		pixels = img_to_array(pixels)
-		pixels = (pixels - 127.5) / 127.5
-		pixels = expand_dims(pixels, 0)
-		return pixels
-
-	@st.cache()
-	def imgGen2(img1):
-	  inputf = img1
-	  SC = sc_control
-	  GCF= gcf_control
-	  asciiart(inputf, SC, GCF, "results.png",color_background)
-	  img = Image.open(img1)
-	  img2 = Image.open('results.png').resize(img.size)
-	  return img2	
-
-	#下载按钮效果设置
-	css = """<style>
-	.stDownloadButton>button {
-	    background-color: #0099ff;
-	    color:#ffffff;
-	}
-
-	.stDownloadButton>button:hover {
-	    background-color: green;
-	    color:white;
-	    }
-	</style>
-	"""
-	st.markdown(css, unsafe_allow_html=True)
-
-
-	if uploaded_file is not None:
-	    st.sidebar.image(uploaded_file, caption='原始图片', use_column_width=True)
-	    im = imgGen2(uploaded_file)	
-	    st.image(im, width=700)
-	    with open("results.png", "rb") as file:
-	        #st.image("图片.jpg")
-	        btn = st.download_button(
-	            label="点我下载生成的ASCII字符画",
-	            data=file,
-	            file_name="ASCII字符画.png",
-	            mime="image/png"
-	            ) 	
 
 
 elif choose == "密码生成器":
